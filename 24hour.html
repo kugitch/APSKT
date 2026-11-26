@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>24 小時報時制・小三互動練習（重製版）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#EEF3F8; --surface:#FFFFFF; --ink:#172338; --muted:#5A6A80; --line:#D3DDE9;
+  --board:#1B3354; --amber:#FFB81C; --am:#2F7FD1; --pm:#D9622B;
+  --ok:#17905F; --okbg:#E3F5EC; --bad:#C93C3C; --badbg:#FBE7E7; --warn:#A86A00; --warnbg:#FFF3D6;
+  --secA:#2F7FD1; --secB:#7652C7; --secC:#17905F; --secD:#C93C3C; --secL:#1B3354;
+  --hint:#FFF8E6; --hintline:#F0D48A; --sel:#E2ECF8;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1725; --surface:#172338; --ink:#E7EDF6; --muted:#9AAAC0; --line:#2B3B55;
+    --board:#0A1424; --amber:#FFC23D; --am:#6AAEF0; --pm:#F08A55;
+    --ok:#45C38C; --okbg:#143628; --bad:#F07272; --badbg:#3A1C20; --warn:#F2C155; --warnbg:#3A2E12;
+    --secA:#6AAEF0; --secB:#A98AF0; --secC:#45C38C; --secD:#F07272; --secL:#9AB6E0;
+    --hint:#2A2614; --hintline:#6B5A23; --sel:#203252;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1725; --surface:#172338; --ink:#E7EDF6; --muted:#9AAAC0; --line:#2B3B55;
+  --board:#0A1424; --amber:#FFC23D; --am:#6AAEF0; --pm:#F08A55;
+  --ok:#45C38C; --okbg:#143628; --bad:#F07272; --badbg:#3A1C20; --warn:#F2C155; --warnbg:#3A2E12;
+  --secA:#6AAEF0; --secB:#A98AF0; --secC:#45C38C; --secD:#F07272; --secL:#9AB6E0;
+  --hint:#2A2614; --hintline:#6B5A23; --sel:#203252;
+  color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--paper);color:var(--ink);font-family:"Noto Sans TC","PingFang HK","PingFang TC","Microsoft JhengHei",sans-serif;font-size:18px;line-height:1.7;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:3px solid var(--am);outline-offset:2px}
+.app{display:grid;grid-template-columns:288px 1fr;height:100%}
+
+/* ---------- sidebar ---------- */
+.side{background:var(--surface);border-right:1px solid var(--line);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 14px 28px}
+.brand{display:flex;align-items:center;gap:12px;padding:4px 6px 14px}
+.brand .digi{font-size:24px;padding:4px 10px}
+.brand h1{font-size:19px;line-height:1.3;margin:0}
+.brand small{display:block;color:var(--muted);font-size:13px;font-weight:400}
+.mode{display:flex;background:var(--paper);border-radius:12px;padding:4px;margin:2px 4px 8px}
+.mode button{flex:1;border:0;background:transparent;border-radius:9px;min-height:40px;font-size:15px;color:var(--muted)}
+.mode button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(20,40,70,.18)}
+.prog{margin:8px 6px 4px;font-size:14px;color:var(--muted)}
+.prog .bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:4px}
+.prog .bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
+.grp{margin-top:16px}
+.grp h2{font-size:15px;margin:0 6px 6px;display:flex;align-items:center;gap:8px}
+.grp h2::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--c)}
+.grp h2 span{font-weight:400;color:var(--muted);font-size:13px}
+.item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:transparent;border-radius:10px;padding:8px 10px;min-height:46px;font-size:16px;line-height:1.35}
+.item:hover{background:var(--paper)}
+.item[aria-current="true"]{background:var(--sel);font-weight:700}
+.item .no{flex:none;width:34px;font-family:"Barlow Condensed",sans-serif;font-size:18px;color:var(--c)}
+.item .tt{flex:1}
+.item .st{flex:none;width:14px;height:14px;border-radius:50%;border:2px solid var(--line)}
+.item .st.tried{border-color:var(--warn);background:var(--warnbg)}
+.item .st.ok{border-color:var(--ok);background:var(--ok)}
+.reset{margin:22px 6px 0;border:1px solid var(--line);background:transparent;border-radius:10px;padding:8px 12px;font-size:14px;color:var(--muted);min-height:40px}
+
+/* ---------- main ---------- */
+.scrim{display:none}
+.main{min-width:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.wrap{max-width:860px;margin:0 auto;padding:28px 28px 60px}
+.topbar{display:none}
+.crumb{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:15px;color:var(--muted)}
+.tag{display:inline-block;color:#fff;background:var(--c);border-radius:8px;padding:2px 10px;font-size:14px;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px}
+.card h2{margin:0 0 10px;font-size:26px;line-height:1.35}
+.prompt{font-size:20px;margin:0 0 6px}
+.prompt b{color:var(--ink)}
+.fig{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:center;margin:16px 0 6px}
+.fig svg{max-width:100%;height:auto}
+.figcap{font-size:14px;color:var(--muted);text-align:center;margin-top:-4px}
+.ans{margin:22px 0 4px;padding:18px 20px;background:var(--paper);border-radius:14px;font-size:21px;line-height:2.4}
+.box{width:2.6em;height:1.9em;font:700 24px "Barlow Condensed","Noto Sans TC",sans-serif;text-align:center;border:2px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);vertical-align:middle;-webkit-appearance:none;appearance:none;padding:0}
+.box:focus{border-color:var(--am);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--am) 25%,transparent)}
+.box.ok,.seg.ok{border-color:var(--ok);background:var(--okbg)}
+.box.bad,.seg.bad{border-color:var(--bad);background:var(--badbg)}
+.box.pad{border-color:var(--warn);background:var(--warnbg)}
+.seg{display:inline-flex;flex-wrap:wrap;gap:6px;vertical-align:middle;border:2px solid transparent;border-radius:12px;padding:2px}
+.opt{border:2px solid var(--line);background:var(--surface);border-radius:10px;min-height:44px;min-width:48px;padding:0 14px;font-size:19px;line-height:1.2}
+.opt[aria-pressed="true"]{border-color:var(--am);background:var(--sel);font-weight:700}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.btn{border:2px solid var(--line);background:var(--surface);border-radius:12px;min-height:48px;padding:0 18px;font-size:17px;font-weight:500}
+.btn.primary{background:var(--board);border-color:var(--board);color:#fff}
+:root[data-theme="dark"] .btn.primary{background:var(--am);border-color:var(--am);color:#0F1725}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{background:var(--am);border-color:var(--am);color:#0F1725}}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.go{background:var(--ok);border-color:var(--ok);color:#fff}
+.fb{margin-top:14px;border-radius:12px;padding:0 16px;font-size:17px}
+.fb:empty{display:none}
+.fb.ok{background:var(--okbg);color:var(--ok);padding:12px 16px;font-weight:700}
+.fb.bad{background:var(--badbg);color:var(--bad);padding:12px 16px}
+.fb.warn{background:var(--warnbg);color:var(--warn);padding:12px 16px}
+.hints{margin-top:14px}
+.hint{background:var(--hint);border:1px solid var(--hintline);border-radius:12px;padding:10px 16px;margin-top:8px;font-size:17px}
+.hint b.k{display:inline-block;margin-right:8px;color:var(--warn)}
+.sol{margin-top:20px;border-top:2px dashed var(--line);padding-top:16px}
+.sol h3{margin:0 0 8px;font-size:21px}
+.sol ol{margin:8px 0 0;padding-left:1.5em}
+.sol li{margin:6px 0}
+.sol .final{display:inline-block;margin-top:10px;padding:6px 14px;border-radius:10px;background:var(--okbg);color:var(--ok);font-weight:700}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+.lock{font-size:14px;color:var(--muted);align-self:center}
+
+/* ---------- digital clock & tables ---------- */
+.digi{display:inline-block;background:var(--board);color:var(--amber);font:700 34px/1.1 "Barlow Condensed",sans-serif;letter-spacing:.06em;padding:8px 16px;border-radius:10px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.06);font-variant-numeric:tabular-nums}
+.digi.big{font-size:64px;padding:10px 22px}
+.dlabel{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:15px;color:var(--muted)}
+.tbl-wrap{overflow-x:auto;max-width:100%}
+table.tt{border-collapse:collapse;font-size:17px;min-width:320px}
+.tt th,.tt td{border:1px solid var(--line);padding:8px 14px;text-align:center}
+.tt th{background:var(--board);color:#fff;font-weight:500}
+.tt td.t{font:700 22px "Barlow Condensed",sans-serif;letter-spacing:.04em}
+.tt tr.hi td{background:var(--okbg)}
+.note{font-size:15px;color:var(--muted);margin:4px 0 0}
+
+/* ---------- svg parts ---------- */
+.c-face{fill:var(--surface);stroke:var(--ink);stroke-width:4}
+.c-tk{stroke:var(--muted);stroke-width:1.5}
+.c-tk5{stroke:var(--ink);stroke-width:3}
+.c-num{fill:var(--ink);font:600 19px "Barlow Condensed",sans-serif;text-anchor:middle}
+.c-h{stroke:var(--ink);stroke-width:7;stroke-linecap:round}
+.c-m{stroke:var(--pm);stroke-width:4;stroke-linecap:round}
+.c-pin{fill:var(--ink)}
+.sv-t{fill:var(--ink);font:500 13px "Noto Sans TC",sans-serif;text-anchor:middle}
+.sv-n{fill:var(--ink);font:700 17px "Barlow Condensed",sans-serif;text-anchor:middle}
+.sv-m{fill:var(--muted);font:500 12px "Noto Sans TC",sans-serif;text-anchor:middle}
+.sv-am{fill:var(--am)} .sv-pm{fill:var(--pm)}
+.sv-axis{stroke:var(--ink);stroke-width:2.5}
+.sv-tick{stroke:var(--ink);stroke-width:1.5}
+.sv-arc{fill:none;stroke:var(--pm);stroke-width:2.5}
+.sv-arc.b{stroke:var(--secB)}
+.sv-head{fill:var(--pm)} .sv-head.b{fill:var(--secB)}
+.sv-lab{fill:var(--pm);font:700 14px "Noto Sans TC",sans-serif;text-anchor:middle}
+.sv-lab.b{fill:var(--secB)}
+.sv-dot{fill:var(--surface);stroke:var(--ink);stroke-width:2.5}
+.sv-pin{fill:var(--amber);stroke:var(--board);stroke-width:2}
+.sv-pinlab{fill:var(--board)}
+.sv-pintxt{fill:var(--amber);font:700 15px "Barlow Condensed",sans-serif;text-anchor:middle}
+.pie-bg{fill:var(--surface);stroke:var(--ink);stroke-width:3}
+.pie-on{fill:color-mix(in srgb,var(--am) 55%,transparent);stroke:var(--ink);stroke-width:2}
+.pie-off{fill:none;stroke:var(--ink);stroke-width:2}
+
+/* ---------- start / duration / end strip ---------- */
+.tri{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;justify-content:center}
+.tri-c{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:15px;color:var(--muted)}
+.tri-c .q{display:inline-flex;align-items:center;justify-content:center;width:112px;height:56px;border:3px dashed var(--pm);border-radius:10px;color:var(--pm);font:700 34px "Barlow Condensed",sans-serif}
+.tri-ar{position:relative;min-width:160px;margin-bottom:22px;padding:0 10px 4px;text-align:center;color:var(--pm);font-weight:700;font-size:16px;border-bottom:3px solid var(--pm)}
+.tri-ar.q{border-bottom-style:dashed}
+.tri-ar::after{content:"";position:absolute;right:-12px;bottom:-9px;border:7px solid transparent;border-left:12px solid var(--pm)}
+.how{display:grid;gap:14px;margin:14px 0}
+.how>div{background:var(--paper);border-radius:14px;padding:16px}
+.how h4{margin:0 0 8px;font-size:19px}
+.step-lab{display:inline-block;min-width:4.2em;font-size:15px;font-weight:700;color:var(--secB)}
+/* ---------- learn pages ---------- */
+.explorer{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;margin:18px 0}
+.ex-row{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.ex-lab{font-size:14px;color:var(--muted)}
+.ex-12{font-size:30px;font-weight:700}
+.ex-12 .ap{color:var(--am)} .ex-12 .ap.pm{color:var(--pm)}
+.ex-rule{background:var(--paper);border-radius:12px;padding:10px 14px;font-size:17px}
+input[type=range]{width:100%;height:44px;accent-color:var(--board);margin:8px 0}
+.nudge{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.rules{display:grid;gap:12px;margin:16px 0}
+.rule{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;background:var(--paper);border-radius:14px;padding:14px 16px}
+.rule .digi{font-size:26px}
+.fr-row{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;margin:12px 0}
+.fr-row figure{margin:0;text-align:center;font-size:18px}
+h3.sub{font-size:20px;margin:26px 0 6px}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;font-size:.85em;margin:0 2px}
+.frac .de{border-top:2px solid currentColor;padding-top:1px}
+mjx-container{display:inline-block!important;margin:0 2px!important}
+
+/* ---------- responsive ---------- */
+@media (max-width: 1000px){ .app{grid-template-columns:250px 1fr} .wrap{padding:22px 18px 50px} }
+@media (max-width: 720px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0 auto 0 0;width:min(86vw,320px);z-index:30;transform:translateX(-102%);transition:transform .25s;padding-top:calc(18px + env(safe-area-inset-top,0px));padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));box-shadow:0 0 40px rgba(0,0,0,.25)}
+  .side.open{transform:none}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:25;display:none}
+  .scrim.open{display:block}
+  .topbar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line);padding:8px 14px;padding-top:calc(8px + env(safe-area-inset-top,0px))}
+  .topbar button{border:1px solid var(--line);background:var(--paper);border-radius:10px;min-height:44px;padding:0 14px;font-size:16px}
+  .card{padding:20px 16px}
+  .explorer{grid-template-columns:1fr;justify-items:center}
+  .digi.big{font-size:52px}
+  .ans{font-size:19px;padding:14px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="題目清單"></aside>
+  <div class="scrim" id="scrim"></div>
+  <main class="main" id="mainScroll">
+    <div class="topbar"><button type="button" id="menuBtn">☰ 題目清單</button><span id="topTitle"></span></div>
+    <div class="wrap" id="main"></div>
+  </main>
+</div>
+
+<script>
+/* ===================== helpers ===================== */
+const T=(h,m)=>h*60+m;
+const p2=n=>String(n).padStart(2,'0');
+const wrap=x=>((x%1440)+1440)%1440;
+const f24=x=>{x=wrap(x);return p2(Math.floor(x/60))+':'+p2(x%60)};
+const r1=n=>Math.round(n*10)/10;
+const N=(a,pad)=>({t:'n',a,pad:!!pad});
+const C=(o,a)=>({t:'c',o,a});
+
+function digi(t,cls=''){return `<span class="digi ${cls}">${t}</span>`}
+function dl(label,t){return `<div class="dlabel">${digi(t)}<span>${label}</span></div>`}
+
+function clockSVG(h,m,size=190){
+  let s=`<svg class="clock" viewBox="0 0 200 200" width="${size}" height="${size}" role="img" aria-label="鐘面">`;
+  s+=`<circle cx="100" cy="100" r="93" class="c-face"/>`;
+  for(let i=0;i<60;i++){const a=i*6*Math.PI/180,ri=i%5?84:77;
+    s+=`<line x1="${r1(100+ri*Math.sin(a))}" y1="${r1(100-ri*Math.cos(a))}" x2="${r1(100+89*Math.sin(a))}" y2="${r1(100-89*Math.cos(a))}" class="${i%5?'c-tk':'c-tk5'}"/>`}
+  for(let n=1;n<=12;n++){const a=n*30*Math.PI/180;s+=`<text x="${r1(100+64*Math.sin(a))}" y="${r1(100-64*Math.cos(a)+7)}" class="c-num">${n}</text>`}
+  const ha=((h%12)+m/60)*30*Math.PI/180, ma=m*6*Math.PI/180;
+  s+=`<line x1="100" y1="100" x2="${r1(100+44*Math.sin(ha))}" y2="${r1(100-44*Math.cos(ha))}" class="c-h"/>`;
+  s+=`<line x1="100" y1="100" x2="${r1(100+70*Math.sin(ma))}" y2="${r1(100-70*Math.cos(ma))}" class="c-m"/>`;
+  return s+`<circle cx="100" cy="100" r="6" class="c-pin"/></svg>`;
+}
+
+/* 0–24 day timeline: 12-hour labels above, 24-hour labels below */
+function dayBar(marks=[]){
+  const X=m=>30+m/1440*580;
+  const top=['午夜12','上午3','上午6','上午9','正午12','下午3','下午6','下午9','午夜12'];
+  let s=`<svg viewBox="0 0 640 132" width="640" role="img" aria-label="一天 24 小時時間線">
+  <defs><linearGradient id="dg" x1="0" x2="1">
+  <stop offset="0" stop-color="#22325A"/><stop offset=".23" stop-color="#46679C"/><stop offset=".33" stop-color="#9CCBF2"/>
+  <stop offset=".5" stop-color="#FFE28E"/><stop offset=".7" stop-color="#FFB36B"/><stop offset=".8" stop-color="#6A5596"/><stop offset="1" stop-color="#22325A"/></linearGradient></defs>
+  <text x="168" y="16" class="sv-m">上午</text><text x="472" y="16" class="sv-m">下午</text>
+  
+  <rect x="30" y="46" width="580" height="22" rx="11" fill="url(#dg)"/>`;
+  for(let i=0;i<=8;i++){const x=X(i*180);
+    s+=`<line x1="${x}" y1="42" x2="${x}" y2="72" class="sv-tick"/>`;
+    s+=`<text x="${x}" y="36" class="sv-t ${i<4?'sv-am':(i<8?'sv-pm':'sv-am')}">${top[i]}</text>`;
+    s+=`<text x="${x}" y="92" class="sv-n">${p2(i*3)}:00</text>`}
+  marks.forEach(mk=>{const x=X(mk.m);
+    s+=`<path d="M${x} 72 l-7 -14 h14 z" class="sv-pin"/>`;
+    s+=`<rect x="${x-34}" y="100" width="68" height="26" rx="7" class="sv-pinlab"/>`;
+    s+=`<line x1="${x}" y1="72" x2="${x}" y2="100" class="sv-tick"/>`;
+    s+=`<text x="${x}" y="119" class="sv-pintxt">${mk.l||f24(mk.m)}</text>`});
+  return s+`</svg>`;
+}
+
+/* jump diagram on a time line: forward (orange) or backward (purple) */
+function jumpSVG(start,steps,back=false,labels){
+  const pts=[start];steps.forEach(st=>pts.push(pts[pts.length-1]+(back?-st.d:st.d)));
+  const n=steps.length,L=60,R=580,seg=(R-L)/n;
+  const xs=pts.map((_,i)=>back?R-i*seg:L+i*seg);
+  const b=back?' b':'';
+  let s=`<svg viewBox="0 0 640 150" width="640" role="img" aria-label="時間線圖解">`;
+  s+=`<line x1="24" y1="100" x2="616" y2="100" class="sv-axis"/><path d="M616 100 l-10 -6 v12 z" class="sv-head" style="fill:var(--ink)"/>`;
+  steps.forEach((st,i)=>{
+    const x1=xs[i],x2=xs[i+1],cx=(x1+x2)/2;
+    s+=`<path d="M${x1} 94 Q${cx} 30 ${x2} 94" class="sv-arc${b}"/>`;
+    const dx=x2-cx,dy=94-30,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len;
+    s+=`<path d="M${x2} 94 L${r1(x2-12*ux-6*uy)} ${r1(94-12*uy+6*ux)} L${r1(x2-12*ux+6*uy)} ${r1(94-12*uy-6*ux)} z" class="sv-head${b}"/>`;
+    s+=`<text x="${cx}" y="54" class="sv-lab${b}">${st.l}</text>`;
+  });
+  pts.forEach((p,i)=>{
+    s+=`<circle cx="${xs[i]}" cy="100" r="6" class="sv-dot"/>`;
+    s+=`<text x="${xs[i]}" y="126" class="sv-n">${labels&&labels[i]?labels[i]:f24(p)}</text>`;
+    if(i===0) s+=`<text x="${xs[i]}" y="145" class="sv-m">${back?'由這裏往回數':'由這裏開始'}</text>`;
+  });
+  return s+`</svg>`;
+}
+
+/* fraction of an hour as a clock-pie */
+function pieSVG(num,den,size=130){
+  const c=60,r=52;let s=`<svg viewBox="0 0 120 120" width="${size}" height="${size}" role="img" aria-label="${num}/${den} 小時">`;
+  s+=`<circle cx="${c}" cy="${c}" r="${r}" class="pie-bg"/>`;
+  for(let i=0;i<den;i++){
+    const a0=i/den*2*Math.PI,a1=(i+1)/den*2*Math.PI;
+    const x0=r1(c+r*Math.sin(a0)),y0=r1(c-r*Math.cos(a0)),x1=r1(c+r*Math.sin(a1)),y1=r1(c-r*Math.cos(a1));
+    s+=`<path d="M${c} ${c} L${x0} ${y0} A${r} ${r} 0 ${1/den>.5?1:0} 1 ${x1} ${y1} Z" class="${i<num?'pie-on':'pie-off'}"/>`;
+    const am=(a0+a1)/2;s+=`<text x="${r1(c+32*Math.sin(am))}" y="${r1(c-32*Math.cos(am)+5)}" class="sv-m" style="fill:var(--ink)">${60/den}分</text>`;
+  }
+  return s+`</svg>`;
+}
+
+function tbl(head,rows,hi=-1){
+  return `<div class="tbl-wrap"><table class="tt"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${
+    rows.map((r,i)=>`<tr class="${i===hi?'hi':''}">${r.map(c=>/^\d\d:\d\d$/.test(c)?`<td class="t">${c}</td>`:`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ===================== sections & questions ===================== */
+const SECS={
+  L:{name:'學習區',c:'--secL',note:'先看看、拉一拉'},
+  A:{name:'簡答',c:'--secA',note:'轉換與讀時間'},
+  B:{name:'時間計算',c:'--secB',note:'經過・結束・開始'},
+  C:{name:'文字題',c:'--secC',note:'生活應用'},
+  D:{name:'挑戰題',c:'--secD',note:'名校程度'}
+};
+const ferry=hi=>tbl(['班次','開出時間','抵達離島'],[['第一班','07:40','08:40'],['第二班','08:00','09:00'],['第三班','08:20','09:20'],['第四班','09:40','10:40']],hi);
+const fest=hi=>tbl(['活動','開始','結束'],[['花車巡遊','10:30','12:00'],['戲曲表演','14:00','16:30'],['舞獅表演','17:30','18:15'],['搶包山比賽','19:00','21:00']],hi);
+function tri(s,d,e){const box=(lab,v)=>`<div class="tri-c">${v==='?'?'<b class="q">?</b>':digi(v)}<span>${lab}</span></div>`;
+  return `<div class="tri">${box('開始時間',s)}<div class="tri-ar ${d==='?'?'q':''}">${d==='?'?'經過多久？':'經過 '+d}</div>${box('結束時間',e)}</div>`}
+const SL=t=>`<span class="step-lab">${t}</span>`;
+const Q=[
+{id:'L1',s:'L',n:'一天有 24 小時',learn:'explorer'},
+{id:'L2',s:'L',n:'轉換方法與時間計算',learn:'rules'},
+{id:'L3',s:'L',n:'三種時間題：知二求一',learn:'types'},
+
+/* ---------- A 簡答 ---------- */
+{id:'A1',s:'A',n:'上午 9 時 30 分',
+ q:'用 24 小時報時制寫出「<b>上午 9 時 30 分</b>」。',
+ tpl:'{0} : {1}',f:[N(9,1),N(30,1)],
+ hints:['上午的時間，時數<b>不用</b>加 12。','時和分都要用<b>兩個數位</b>表示。','9 只有一個數位，前面要補 0。'],
+ sol:{fig:()=>dayBar([{m:T(9,30)}]),steps:['上午的時間，時數不變：9 時。','時數要用兩個數位：9 → 09。','分鐘 30 不變。'],ans:'09:30（讀作「9 時 30 分」或「9 時半」）'}},
+{id:'A2',s:'A',n:'下午 4 時',
+ q:'用 24 小時報時制寫出「<b>下午 4 時</b>」。',
+ tpl:'{0} : {1}',f:[N(16,1),N(0,1)],
+ hints:['下午 1 時至 11 時，時數要<b>加上 12</b>。','4 + 12 = ？','整點的分鐘寫成「00」。'],
+ sol:{fig:()=>dayBar([{m:T(16,0)}]),steps:['下午的時間，時數加 12：4 + 12 = 16。','分鐘是 0，寫成 00。'],ans:'16:00（讀作「16 時」）'}},
+{id:'A3',s:'A',n:'8:15 p.m.',
+ q:'用 24 小時報時制寫出「<b>8:15 p.m.</b>」。',
+ tpl:'{0} : {1}',f:[N(20,1),N(15,1)],
+ hints:['a.m. 是上午，p.m. 是下午。','下午 → 時數加 12：8 + 12 = ？','分鐘 15 不變。'],
+ sol:{fig:()=>dayBar([{m:T(20,15)}]),steps:['p.m. 表示下午。','8 + 12 = 20。','分鐘不變：15。'],ans:'20:15'}},
+{id:'A4',s:'A',n:'正午 12 時 45 分',
+ q:'用 24 小時報時制寫出「<b>下午 12 時 45 分</b>」。<br><span class="note">小心陷阱！</span>',
+ tpl:'{0} : {1}',f:[N(12,1),N(45,1)],
+ hints:['下午 12 時 45 分，就是正午 12 時過了 45 分鐘。','正午 12 時已經是 12:00，<b>不用</b>再加 12。','12 + 12 = 24 是錯的！'],
+ sol:{fig:()=>dayBar([{m:T(12,45)}]),steps:['「下午 12 時 45 分」只是正午後 45 分鐘，還未到下午 1 時。','正午 12 時記作 12:00，所以時數仍是 12。'],ans:'12:45'}},
+{id:'A5',s:'A',n:'午夜 12 時 20 分',
+ q:'用 24 小時報時制寫出「<b>上午 12 時 20 分</b>」（即午夜 12 時過了 20 分鐘）。',
+ tpl:'{0} : {1}',f:[N(0,1),N(20,1)],
+ hints:['午夜 12 時是新一天的<b>開始</b>，記作 00:00。','午夜後 20 分鐘，時數是多少？','時和分各用兩個數位。'],
+ sol:{fig:()=>dayBar([{m:T(0,20)}]),steps:['午夜 12 時是一天的開始，即 0 時。','過了 20 分鐘 → 0 時 20 分。','寫成 00:20，讀作「0 時 20 分」。'],ans:'00:20'}},
+{id:'A6',s:'A',n:'21:40 轉 12 小時',
+ q:'用 12 小時報時制寫出數字鐘所示的時間。',fig:()=>digi('21:40','big'),
+ tpl:'{0}午 {1} 時 {2} 分',f:[C(['上','下'],'下'),N(9),N(40)],
+ hints:['時數 21 大於 12，所以是<b>下午</b>。','時數減 12。','21 − 12 = ？'],
+ sol:{fig:()=>dayBar([{m:T(21,40)}]),steps:['21 大於 12，是下午。','21 − 12 = 9。','分鐘 40 不變。'],ans:'下午 9 時 40 分'}},
+{id:'A7',s:'A',n:'06:05 轉 12 小時',
+ q:'用 12 小時報時制寫出數字鐘所示的時間。',fig:()=>digi('06:05','big'),
+ tpl:'{0}午 {1} 時 {2} 分',f:[C(['上','下'],'上'),N(6),N(5)],
+ hints:['時數 06 小於 12，是上午還是下午？','上午的時間，時數不用改。','06 → 6，05 → 5。'],
+ sol:{fig:()=>dayBar([{m:T(6,5)}]),steps:['06 小於 12，是上午。','去掉補上的 0：6 時 5 分。'],ans:'上午 6 時 5 分'}},
+{id:'A8',s:'A',n:'12:00 是甚麼時候？',
+ q:'數字鐘顯示下面的時間。這是甚麼時候？',fig:()=>digi('12:00','big'),
+ tpl:'{0}',f:[C(['正午 12 時','午夜 12 時'],'正午 12 時')],
+ hints:['在 24 小時報時制，午夜 12 時寫成甚麼？','午夜 12 時是一天的開始，記作 00:00。','那麼 12:00 是一天的中間。'],
+ sol:{fig:()=>dayBar([{m:0,l:'00:00'},{m:T(12,0)}]),steps:['午夜 12 時記作 00:00。','12:00 在一天的中間，即正午 12 時（中午）。'],ans:'正午 12 時'}},
+{id:'A9',s:'A',n:'讀鐘面（放學）',
+ q:'下午，同學們放學了。用 24 小時報時制寫出鐘面所示的時間。',fig:()=>clockSVG(3,20),
+ tpl:'{0} : {1}',f:[N(15,1),N(20,1)],
+ hints:['時針過了 3、未到 4；分針指着 4。','分針指着 4，即 4 × 5 = 20 分。鐘面是 3 時 20 分。','放學是下午，時數加 12。'],
+ sol:{fig:()=>clockSVG(3,20,150)+dayBar([{m:T(15,20)}]),steps:['時針在 3 和 4 之間 → 3 時；分針指着 4 → 20 分。','放學在下午：3 + 12 = 15。'],ans:'15:20'}},
+{id:'A10',s:'A',n:'讀鐘面（小息）',
+ q:'早上，同學們在小息。用 24 小時報時制寫出鐘面所示的時間。',fig:()=>clockSVG(10,30),
+ tpl:'{0} : {1}',f:[N(10,1),N(30,1)],
+ hints:['分針指着 6，即 30 分。','時針在 10 和 11 之間，是 10 時。','早上 → 上午，時數不用加 12。'],
+ sol:{fig:()=>clockSVG(10,30,150)+dayBar([{m:T(10,30)}]),steps:['鐘面是 10 時 30 分（10 時半）。','小息在早上，是上午，時數不變。'],ans:'10:30'}},
+{id:'A11',s:'A',n:'哪個最早？',
+ q:'下面哪一個時間<b>最早</b>？',
+ tpl:'{0}',f:[C(['14:05','09:50','12:10','08:59'],'08:59')],
+ hints:['24 小時報時制的時數越小，時間越早。','先比較時數：14、09、12、08。','時數最小的是哪一個？'],
+ sol:{fig:()=>dayBar([{m:T(8,59)},{m:T(14,5)}]),steps:['比較時數：08 &lt; 09 &lt; 12 &lt; 14。','時數 08 最小，所以 08:59 最早。','用 24 小時報時制排先後，不用理會上午、下午，很方便！'],ans:'08:59'}},
+{id:'A12',s:'A',n:'經過了多久？',
+ q:'圖書館由 <b>14:00</b> 開放到 <b>17:30</b>。圖書館開放了多久？',
+ fig:()=>dl('開放','14:00')+dl('關閉','17:30'),
+ tpl:'{0} 小時 {1} 分鐘',f:[N(3),N(30)],
+ hints:['由 14:00 向前數到 17:30。','14:00 → 17:00 是幾小時？','17:00 → 17:30 是幾分鐘？'],
+ sol:{fig:()=>jumpSVG(T(14,0),[{d:180,l:'3 小時'},{d:30,l:'30 分'}]),steps:['14:00 → 17:00：3 小時。','17:00 → 17:30：30 分鐘。'],ans:'3 小時 30 分鐘'}},
+
+/* ---------- B 時間計算 ---------- */
+{id:'B1',s:'B',n:'經過：09:15 → 11:40',
+ q:'由 <b>09:15</b> 到 <b>11:40</b>，經過了多久？跟着步驟做。',fig:()=>tri('09:15','?','11:40'),
+ tpl:`${SL('第一步')}先數小時：09:15 → 11:15 是 {0} 小時<br>${SL('第二步')}再數分鐘：11:15 → 11:40 是 {1} 分鐘<br>${SL('答案')}經過了 {2} 小時 {3} 分鐘`,f:[N(2),N(25),N(2),N(25)],
+ hints:['開始的分鐘是 15，先數到另一個「15 分」：11:15。','09 → 11 是幾小時？','40 − 15 = ？'],
+ sol:{fig:()=>jumpSVG(T(9,15),[{d:120,l:'2 小時'},{d:25,l:'25 分'}]),steps:['09:15 → 11:15：2 小時。','11:15 → 11:40：40 − 15 = 25 分鐘。'],ans:'2 小時 25 分鐘'}},
+{id:'B2',s:'B',n:'經過：13:45 → 16:20',
+ q:'由 <b>13:45</b> 到 <b>16:20</b>，經過了多久？這次用「先到整點」的方法。',fig:()=>tri('13:45','?','16:20'),
+ tpl:`${SL('第一步')}13:45 → 14:00 是 {0} 分鐘<br>${SL('第二步')}14:00 → 16:00 是 {1} 小時<br>${SL('第三步')}16:00 → 16:20 是 {2} 分鐘<br>${SL('答案')}經過了 {3} 小時 {4} 分鐘`,f:[N(15),N(2),N(20),N(2),N(35)],
+ hints:['1 小時有 60 分鐘，60 − 45 = ？','14 → 16 是幾小時？','把分鐘加起來：15 + 20 = ？'],
+ sol:{fig:()=>jumpSVG(T(13,45),[{d:15,l:'15 分'},{d:120,l:'2 小時'},{d:20,l:'20 分'}]),steps:['13:45 → 14:00：15 分鐘。','14:00 → 16:00：2 小時。','16:00 → 16:20：20 分鐘。','2 小時 + 15 分鐘 + 20 分鐘 = 2 小時 35 分鐘。','為甚麼不能直接用 20 − 45？因為 20 比 45 小，所以要先數到整點。'],ans:'2 小時 35 分鐘'}},
+{id:'B3',s:'B',n:'經過：下午 2:50 → 5:35',
+ q:'游泳比賽由<b>下午 2 時 50 分</b>進行到<b>下午 5 時 35 分</b>。先轉做 24 小時報時制，再計算比賽進行了多久。',
+ tpl:`${SL('第一步')}開始 {0} : {1}　結束 {2} : {3}<br>${SL('答案')}比賽進行了 {4} 小時 {5} 分鐘`,f:[N(14,1),N(50,1),N(17,1),N(35,1),N(2),N(45)],
+ hints:['下午 → 時數加 12：2 + 12 = 14，5 + 12 = 17。','14:50 先數到 15:00，用了 10 分鐘。','15:00 → 17:00 是 2 小時，17:00 → 17:35 是 35 分鐘。'],
+ sol:{fig:()=>tri('14:50','?','17:35')+jumpSVG(T(14,50),[{d:10,l:'10 分'},{d:120,l:'2 小時'},{d:35,l:'35 分'}]),steps:['下午 2 時 50 分 = 14:50；下午 5 時 35 分 = 17:35。','14:50 → 15:00：10 分鐘；15:00 → 17:00：2 小時；17:00 → 17:35：35 分鐘。','10 + 35 = 45 分鐘，共 2 小時 45 分鐘。'],ans:'2 小時 45 分鐘'}},
+{id:'B4',s:'B',n:'經過：跨越正午',
+ q:'圖書館的書展由<b>上午 9 時 40 分</b>開始，到<b>下午 1 時 5 分</b>結束。書展舉行了多久？',
+ tpl:'書展舉行了 {0} 小時 {1} 分鐘。',f:[N(3),N(25)],
+ hints:['先轉做 24 小時報時制：09:40 和 13:05。','09:40 → 10:00 是多少分鐘？10:00 → 13:00 是幾小時？','13:00 → 13:05 是 5 分鐘，最後把各段加起來。'],
+ sol:{fig:()=>tri('09:40','?','13:05')+jumpSVG(T(9,40),[{d:20,l:'20 分'},{d:180,l:'3 小時'},{d:5,l:'5 分'}]),steps:['上午 9 時 40 分 = 09:40；下午 1 時 5 分 = 13:05。','09:40 → 10:00：20 分鐘；10:00 → 13:00：3 小時；13:00 → 13:05：5 分鐘。','共 3 小時 25 分鐘。','常見錯誤：用 1 − 9 計算。跨越正午時，一定要先轉做 24 小時報時制。'],ans:'3 小時 25 分鐘'}},
+{id:'B5',s:'B',n:'結束：08:25 + 2 時 40 分',
+ q:'旅遊巴在 <b>08:25</b> 出發，車程 2 小時 40 分鐘。旅遊巴在甚麼時間到達？',fig:()=>tri('08:25','2 小時 40 分鐘','?'),
+ tpl:`${SL('第一步')}先加小時：08:25 + 2 小時 = {0} : {1}<br>${SL('第二步')}再加分鐘：+ 40 分鐘 = {2} : {3}`,f:[N(10,1),N(25,1),N(11,1),N(5,1)],
+ hints:['08 + 2 = 10，分鐘不變。','10:25 + 40 分鐘：25 + 40 = 65 分鐘，超過 60 了！','65 分鐘 = 1 小時 5 分鐘，所以時數要多加 1。'],
+ sol:{fig:()=>jumpSVG(T(8,25),[{d:120,l:'+ 2 小時'},{d:35,l:'+ 35 分'},{d:5,l:'+ 5 分'}]),steps:['08:25 + 2 小時 = 10:25。','10:25 + 35 分鐘 = 11:00（先湊成整點）。','40 − 35 = 5，11:00 + 5 分鐘 = 11:05。'],ans:'11:05'}},
+{id:'B6',s:'B',n:'結束：16:50 + 1 時 25 分',
+ q:'足球訓練在 <b>16:50</b> 開始，進行了 1 小時 25 分鐘。訓練在甚麼時間結束？',fig:()=>tri('16:50','1 小時 25 分鐘','?'),
+ tpl:`${SL('第一步')}16:50 + 1 小時 = {0} : {1}<br>${SL('第二步')}再加 10 分鐘到整點，然後加剩下的 15 分鐘<br>${SL('答案')}訓練在 {2} : {3} 結束`,f:[N(17,1),N(50,1),N(18,1),N(15,1)],
+ hints:['16 + 1 = 17。','17:50 再過 10 分鐘便是 18:00。','25 − 10 = 15，18:00 + 15 分鐘 = ？'],
+ sol:{fig:()=>jumpSVG(T(16,50),[{d:60,l:'+ 1 小時'},{d:10,l:'+ 10 分'},{d:15,l:'+ 15 分'}]),steps:['16:50 + 1 小時 = 17:50。','17:50 + 10 分鐘 = 18:00。','18:00 + 15 分鐘 = 18:15。'],ans:'18:15'}},
+{id:'B7',s:'B',n:'結束：話劇（答 12 小時）',
+ q:'學校話劇在<b>下午 7 時 35 分</b>開始，演出 1 小時 50 分鐘。話劇在甚麼時間完結？（用 12 小時報時制）',fig:()=>tri('19:35','1 小時 50 分鐘','?'),
+ tpl:'話劇在{0}午 {1} 時 {2} 分完結。',f:[C(['上','下'],'下'),N(9),N(25)],
+ hints:['下午 7 時 35 分 = 19:35。','19:35 + 1 小時 = 20:35；再加 25 分鐘到 21:00。','50 − 25 = 25，21:00 + 25 分鐘 = 21:25，再轉回 12 小時報時制。'],
+ sol:{fig:()=>jumpSVG(T(19,35),[{d:60,l:'+ 1 小時'},{d:25,l:'+ 25 分'},{d:25,l:'+ 25 分'}]),steps:['19:35 + 1 小時 = 20:35。','20:35 + 25 分鐘 = 21:00；21:00 + 25 分鐘 = 21:25。','21 − 12 = 9 → 下午 9 時 25 分。'],ans:'下午 9 時 25 分'}},
+{id:'B8',s:'B',n:'結束：跨越正午',
+ q:'陶藝工作坊在<b>上午 11 時 20 分</b>開始，歷時 3 小時 45 分鐘。工作坊在甚麼時間結束？（用 24 小時報時制）',
+ tpl:'工作坊在 {0} : {1} 結束。',f:[N(15,1),N(5,1)],
+ hints:['11:20 + 3 小時 = 14:20。','14:20 再加 40 分鐘便到 15:00。','45 − 40 = 5，15:00 + 5 分鐘 = ？'],
+ sol:{fig:()=>tri('11:20','3 小時 45 分鐘','?')+jumpSVG(T(11,20),[{d:180,l:'+ 3 小時'},{d:40,l:'+ 40 分'},{d:5,l:'+ 5 分'}]),steps:['11:20 + 3 小時 = 14:20（過了正午，時數直接寫 14）。','14:20 + 40 分鐘 = 15:00。','15:00 + 5 分鐘 = 15:05。'],ans:'15:05'}},
+{id:'B9',s:'B',n:'開始：? + 2 時 30 分 = 15:50',
+ q:'一場籃球比賽在 <b>15:50</b> 結束，比賽進行了 2 小時 30 分鐘。比賽在甚麼時間開始？',fig:()=>tri('?','2 小時 30 分鐘','15:50'),
+ tpl:`${SL('第一步')}往回數小時：15:50 − 2 小時 = {0} : {1}<br>${SL('第二步')}往回數分鐘：− 30 分鐘 = {2} : {3}`,f:[N(13,1),N(50,1),N(13,1),N(20,1)],
+ hints:['求開始時間 → 由結束時間<b>往回</b>數。','15 − 2 = 13，分鐘不變。','50 − 30 = ？'],
+ sol:{fig:()=>jumpSVG(T(15,50),[{d:120,l:'− 2 小時'},{d:30,l:'− 30 分'}],true),steps:['15:50 往回 2 小時 → 13:50。','13:50 往回 30 分鐘 → 13:20。','驗算：13:20 + 2 小時 30 分鐘 = 15:50 ✓'],ans:'13:20'}},
+{id:'B10',s:'B',n:'開始：? + 1 時 40 分 = 10:15',
+ q:'小敏做家課用了 1 小時 40 分鐘，在 <b>10:15</b> 完成。她在甚麼時間開始做家課？',fig:()=>tri('?','1 小時 40 分鐘','10:15'),
+ tpl:`${SL('第一步')}10:15 − 1 小時 = {0} : {1}<br>${SL('第二步')}往回 15 分鐘到整點 = {2} : {3}<br>${SL('第三步')}再往回剩下的 25 分鐘 = {4} : {5}`,f:[N(9,1),N(15,1),N(9,1),N(0,1),N(8,1),N(35,1)],
+ hints:['10 − 1 = 9 → 09:15。','09:15 往回 15 分鐘剛好是 09:00。','40 − 15 = 25，09:00 往回 25 分鐘：60 − 25 = 35 → 08:35。'],
+ sol:{fig:()=>jumpSVG(T(10,15),[{d:60,l:'− 1 小時'},{d:15,l:'− 15 分'},{d:25,l:'− 25 分'}],true),steps:['10:15 往回 1 小時 → 09:15。','09:15 往回 15 分鐘 → 09:00。','還要往回 40 − 15 = 25 分鐘：09:00 → 08:35。','驗算：08:35 + 1 小時 40 分鐘 = 10:15 ✓'],ans:'08:35'}},
+{id:'B11',s:'B',n:'開始：焗蛋糕',
+ q:'媽媽焗蛋糕需時 1 小時 25 分鐘，蛋糕在 <b>19:10</b> 焗好。媽媽在甚麼時間開始焗蛋糕？',fig:()=>tri('?','1 小時 25 分鐘','19:10'),
+ tpl:'媽媽在 {0} : {1} 開始焗蛋糕。',f:[N(17,1),N(45,1)],
+ hints:['往回數：19:10 − 1 小時 = 18:10。','18:10 往回 10 分鐘到 18:00。','25 − 10 = 15，18:00 往回 15 分鐘。'],
+ sol:{fig:()=>jumpSVG(T(19,10),[{d:60,l:'− 1 小時'},{d:10,l:'− 10 分'},{d:15,l:'− 15 分'}],true),steps:['19:10 往回 1 小時 → 18:10。','18:10 往回 10 分鐘 → 18:00。','18:00 往回 15 分鐘 → 17:45。'],ans:'17:45'}},
+{id:'B12',s:'B',n:'開始：比賽（答 12 小時）',
+ q:'象棋比賽在<b>下午 4 時 5 分</b>結束，比賽進行了 2 小時 20 分鐘。比賽在甚麼時間開始？（用 12 小時報時制）',
+ tpl:'比賽在{0}午 {1} 時 {2} 分開始。',f:[C(['上','下'],'下'),N(1),N(45)],
+ hints:['下午 4 時 5 分 = 16:05。','16:05 往回 2 小時 = 14:05；再往回 5 分鐘到 14:00。','20 − 5 = 15，14:00 往回 15 分鐘 = 13:45，再轉回 12 小時報時制。'],
+ sol:{fig:()=>tri('?','2 小時 20 分鐘','16:05')+jumpSVG(T(16,5),[{d:120,l:'− 2 小時'},{d:5,l:'− 5 分'},{d:15,l:'− 15 分'}],true),steps:['下午 4 時 5 分 = 16:05。','16:05 往回 2 小時 → 14:05；往回 5 分鐘 → 14:00；再往回 15 分鐘 → 13:45。','13 − 12 = 1 → 下午 1 時 45 分。'],ans:'下午 1 時 45 分'}},
+
+/* ---------- C 文字題 ---------- */
+{id:'C1',s:'C',n:'宿營活動',
+ q:'永康參加宿營。射箭在<b>上午 11 時 30 分</b>開始，攀石在<b>下午 3 時 45 分</b>開始。用 24 小時報時制寫出兩項活動的開始時間。',
+ tpl:'射箭：{0} : {1}<br>攀石：{2} : {3}',f:[N(11,1),N(30,1),N(15,1),N(45,1)],
+ hints:['射箭在上午，時數不變。','攀石在下午，時數加 12。','3 + 12 = ？'],
+ sol:{fig:()=>dayBar([{m:T(11,30)},{m:T(15,45)}]),steps:['上午 11 時 30 分 → 11:30。','下午 3 時 45 分 → 3 + 12 = 15 → 15:45。'],ans:'射箭 11:30；攀石 15:45'}},
+{id:'C2',s:'C',n:'度假營餐廳',
+ q:'下面是度假營餐廳的用膳時間表。志明在<b>下午 1 時 20 分</b>到達餐廳。',
+ fig:()=>tbl(['','開始','結束'],[['早餐','08:30','10:00'],['午餐','13:00','14:30'],['晚餐','18:15','20:00']]),
+ tpl:'志明到達時，餐廳正在供應：{0}<br>晚餐在{1}午 {2} 時 {3} 分開始。',f:[C(['早餐','午餐','晚餐','沒有供應'],'午餐'),C(['上','下'],'下'),N(6),N(15)],
+ hints:['先把「下午 1 時 20 分」轉為 24 小時報時制：1 + 12 = 13 → 13:20。','13:20 在哪一段時間之內？','晚餐 18:15 → 18 − 12 = ？'],
+ sol:{fig:()=>tbl(['','開始','結束'],[['早餐','08:30','10:00'],['午餐','13:00','14:30'],['晚餐','18:15','20:00']],1),steps:['下午 1 時 20 分 = 13:20。','13:20 在 13:00 和 14:30 之間，正供應午餐。','18:15 → 18 − 12 = 6 → 下午 6 時 15 分。'],ans:'午餐；下午 6 時 15 分'}},
+{id:'C3',s:'C',n:'參觀農場',
+ q:'樂兒一家在 <b>10:35</b> 到達農場，<b>12:50</b> 離開。他們在農場逗留了多久？',
+ fig:()=>dl('到達','10:35')+dl('離開','12:50'),
+ tpl:'他們逗留了 {0} 小時 {1} 分鐘。',f:[N(2),N(15)],
+ hints:['先數小時：10:35 → 12:35 是幾小時？','12:35 → 12:50 是幾分鐘？','把兩段加起來。'],
+ sol:{fig:()=>jumpSVG(T(10,35),[{d:120,l:'2 小時'},{d:15,l:'15 分'}]),steps:['10:35 → 12:35：2 小時。','12:35 → 12:50：15 分鐘。'],ans:'2 小時 15 分鐘'}},
+{id:'C4',s:'C',n:'酒樓午膳',
+ q:'他們在 <b>13:05</b> 開始午膳，用了 1 小時 20 分鐘。他們在甚麼時間用膳完畢？',
+ tpl:'他們在 {0} : {1} 用膳完畢。',f:[N(14,1),N(25,1)],
+ hints:['先加小時，再加分鐘。','13:05 + 1 小時 = 14:05。','14:05 + 20 分鐘 = ？'],
+ sol:{fig:()=>jumpSVG(T(13,5),[{d:60,l:'+ 1 小時'},{d:20,l:'+ 20 分'}]),steps:['13:05 + 1 小時 = 14:05。','14:05 + 20 分鐘 = 14:25。'],ans:'14:25'}},
+{id:'C5',s:'C',n:'參觀漁村',
+ q:'他們在 <b>14:40</b> 到達漁村，逗留了 2 小時 25 分鐘。他們在甚麼時間離開漁村？',
+ tpl:'他們在 {0} : {1} 離開漁村。',f:[N(17,1),N(5,1)],
+ hints:['14:40 + 2 小時 = 16:40。','16:40 + 25 分鐘：先加 20 分鐘到 17:00。','17:00 再加剩下的 5 分鐘。記得分鐘要寫兩個數位。'],
+ sol:{fig:()=>jumpSVG(T(14,40),[{d:120,l:'+ 2 小時'},{d:20,l:'+ 20 分'},{d:5,l:'+ 5 分'}]),steps:['14:40 + 2 小時 = 16:40。','16:40 + 20 分鐘 = 17:00（湊成整點）。','17:00 + 5 分鐘 = 17:05。'],ans:'17:05'}},
+{id:'C6',s:'C',n:'去動物園',
+ q:'小光一家乘車到動物園，車程 1 小時 5 分鐘，在 <b>11:30</b> 到達。他們在甚麼時間出發？',
+ tpl:'他們在 {0} : {1} 出發。',f:[N(10,1),N(25,1)],
+ hints:['知道到達時間，要找出發時間 → <b>往回數</b>。','11:30 往回 1 小時 = ？','10:30 再往回 5 分鐘。'],
+ sol:{fig:()=>jumpSVG(T(11,30),[{d:60,l:'− 1 小時'},{d:5,l:'− 5 分'}],true),steps:['11:30 往回 1 小時 → 10:30。','10:30 往回 5 分鐘 → 10:25。'],ans:'10:25'}},
+{id:'C7',s:'C',n:'大象表演',
+ q:'動物園的大象表演第二場在 <b>15:45</b> 開始，與第一場相距 3 小時 20 分鐘。第一場在甚麼時間開始？',
+ tpl:'第一場在 {0} : {1} 開始。',f:[N(12,1),N(25,1)],
+ hints:['第一場比第二場早，要往回數。','15:45 往回 3 小時 = 12:45。','12:45 往回 20 分鐘 = ？'],
+ sol:{fig:()=>jumpSVG(T(15,45),[{d:180,l:'− 3 小時'},{d:20,l:'− 20 分'}],true),steps:['15:45 往回 3 小時 → 12:45。','12:45 往回 20 分鐘 → 12:25。'],ans:'12:25'}},
+{id:'C8',s:'C',n:'維修熊貓館',
+ q:'熊貓館的維修工程用了 4 小時 50 分鐘，在 <b>17:42</b> 完成。工程在甚麼時間開始？',
+ tpl:'工程在 {0} : {1} 開始。',f:[N(12,1),N(52,1)],
+ hints:['往回數：17:42 往回 4 小時 = 13:42。','13:42 往回 50 分鐘：先回 42 分鐘到 13:00。','50 − 42 = 8，13:00 再往回 8 分鐘。'],
+ sol:{fig:()=>jumpSVG(T(17,42),[{d:240,l:'− 4 小時'},{d:42,l:'− 42 分'},{d:8,l:'− 8 分'}],true),steps:['17:42 往回 4 小時 → 13:42。','13:42 往回 42 分鐘 → 13:00。','50 − 42 = 8；13:00 往回 8 分鐘 → 12:52。'],ans:'12:52'}},
+{id:'C9',s:'C',n:'離島節慶',
+ q:'離島今天舉行節慶活動，下面是活動時間表。',
+ fig:()=>fest(),
+ tpl:'小琳在 17:46 抵達離島，正在舉行：<br>{0}<br>高先生在下午 6 時半至 7 時做熱身運動，他會參加：<br>{1}<br>戲曲表演歷時 {2} 小時 {3} 分鐘。',
+ f:[C(['花車巡遊','戲曲表演','舞獅表演','搶包山比賽'],'舞獅表演'),C(['花車巡遊','戲曲表演','舞獅表演','搶包山比賽'],'搶包山比賽'),N(2),N(30)],
+ hints:['17:46 在哪個活動的開始和結束之間？','下午 6 時半至 7 時 = 18:30 至 19:00。熱身完畢後，下一個活動是甚麼？','14:00 → 16:00 是 2 小時，16:00 → 16:30 呢？'],
+ sol:{fig:()=>fest(2)+jumpSVG(T(14,0),[{d:120,l:'2 小時'},{d:30,l:'30 分'}]),steps:['17:46 在 17:30 至 18:15 之間 → 舞獅表演。','下午 6 時半至 7 時 = 18:30 至 19:00，熱身完畢正好 19:00 → 搶包山比賽。','14:00 → 16:30：2 小時 30 分鐘。'],ans:'舞獅表演；搶包山比賽；2 小時 30 分鐘'}},
+{id:'C10',s:'C',n:'離島渡輪',
+ q:'下表是往離島的渡輪班次。王先生在<b>上午 8 時 10 分</b>到達碼頭；陳先生要在<b>上午 10 時 30 分</b>或之前抵達離島。',
+ fig:()=>ferry(),
+ tpl:'王先生最早可乘第 {0} 班渡輪。<br>陳先生如果乘第四班渡輪，他{1}準時抵達。',f:[N(3),C(['會','不會'],'不會')],
+ hints:['上午 8 時 10 分 = 08:10。哪一班在 08:10 之後才開出？','上午 10 時 30 分 = 10:30。','第四班幾時抵達離島？比 10:30 早還是遲？'],
+ sol:{fig:()=>ferry(2),steps:['08:10 時，第一、二班已開出，最早可乘第三班（08:20）。','第四班在 10:40 抵達，比 10:30 遲了 10 分鐘。','所以陳先生乘第四班不會準時抵達，他最遲要乘第三班。'],ans:'第三班；不會'}},
+
+/* ---------- D 挑戰題 ---------- */
+{id:'D1',s:'D',n:'跨越午夜的航班',
+ q:'一班飛機在 <b>22:50</b> 起飛，飛行 3 小時 25 分鐘。飛機在甚麼時間降落？（用 24 小時報時制）',
+ tpl:'{0} : {1}（第二天）',f:[N(2,1),N(15,1)],
+ hints:['過了午夜，時間由 00:00 重新開始。','22:50 → 00:00 是多久？','3 小時 25 分鐘減去已用的時間，再由 00:00 數下去。'],
+ sol:{fig:()=>jumpSVG(T(22,50),[{d:10,l:'10 分'},{d:60,l:'1 小時'},{d:135,l:'2 小時 15 分'}],false,['22:50','23:00','00:00','02:15']),steps:['22:50 → 00:00：1 小時 10 分鐘。','3 小時 25 分鐘 − 1 小時 10 分鐘 = 2 小時 15 分鐘。','00:00 + 2 小時 15 分鐘 = 02:15（第二天）。','常見錯誤：寫成 26:15 —— 24 小時報時制最大只到 23:59！'],ans:'02:15'}},
+{id:'D2',s:'D',n:'睡了多久？',
+ q:'家明昨晚 <b>21:40</b> 入睡，今早 <b>07:05</b> 起床。他睡了多久？',
+ tpl:'{0} 小時 {1} 分鐘',f:[N(9),N(25)],
+ hints:['不能直接用 07:05 − 21:40！以午夜為界分兩段。','21:40 → 00:00 是多久？','00:00 → 07:05 是多久？兩段相加。'],
+ sol:{fig:()=>jumpSVG(T(21,40),[{d:20,l:'20 分'},{d:120,l:'2 小時'},{d:425,l:'7 小時 5 分'}],false,['21:40','22:00','00:00','07:05']),steps:['21:40 → 22:00：20 分鐘；22:00 → 00:00：2 小時。午夜前共 2 小時 20 分鐘。','00:00 → 07:05：7 小時 5 分鐘。','2 小時 20 分鐘 + 7 小時 5 分鐘 = 9 小時 25 分鐘。'],ans:'9 小時 25 分鐘'}},
+{id:'D3',s:'D',n:'走慢了的時鐘',
+ q:'課室的時鐘<b>每小時慢 3 分鐘</b>。老師在 06:00 把時鐘校準。當時鐘顯示 <b>11:42</b> 時，真正的時間是甚麼？',
+ tpl:'真正的時間是 {0} : {1}',f:[N(12,1),N(0,1)],
+ hints:['真正過了 1 小時，時鐘只走了 57 分鐘。','列表：真正 07:00 時，時鐘顯示 06:57；真正 08:00 時，顯示 07:54……','繼續列表，找出時鐘顯示 11:42 的一行。'],
+ sol:{fig:()=>tbl(['真正時間','時鐘顯示','慢了'],[['06:00','06:00','0 分'],['07:00','06:57','3 分'],['08:00','07:54','6 分'],['09:00','08:51','9 分'],['10:00','09:48','12 分'],['11:00','10:45','15 分'],['12:00','11:42','18 分']],6),steps:['每過 1 小時，時鐘慢 3 分鐘，慢了的時間會越積越多。','列表可見：真正 12:00 時，時鐘慢了 18 分鐘，顯示 11:42。','驗算：12:00 − 18 分鐘 = 11:42 ✓。','常見錯誤：以為答案是 11:42 + 3 分鐘 = 11:45。'],ans:'12:00'}},
+{id:'D4',s:'D',n:'數字之和最大',
+ q:'數字鐘用 24 小時報時制，例如 <b>13:25</b> 的四個數字之和是 1 + 3 + 2 + 5 = 11。一天之中，哪一個時間的四個數字之和<b>最大</b>？和是多少？',
+ tpl:'時間是 {0} : {1}，數字之和是 {2}。',f:[N(19,1),N(59,1),N(24)],
+ hints:['分開考慮「時」和「分」。分鐘最大可以是 59，5 + 9 = 14。','時數由 00 至 23。哪一個時數的兩個數字之和最大？','比較：23 → 2 + 3 = 5；19 → 1 + 9 = 10；09 → 0 + 9 = 9。'],
+ sol:{fig:()=>`<div>${digi('19:59','big')}</div>`,steps:['分鐘的兩個數字之和最大：59 → 5 + 9 = 14（不能是 99，分鐘最多 59）。','時數的兩個數字之和最大：19 → 1 + 9 = 10（23 只得 5，29 不存在）。','所以最大是 19:59：1 + 9 + 5 + 9 = 24。'],ans:'19:59；24'}},
+{id:'D5',s:'D',n:'四個數字相同',
+ q:'數字鐘現在顯示 <b>15:21</b>。最少要再過多久，鐘上的四個數字才會<b>全部相同</b>（例如 11:11）？',
+ tpl:'{0} 小時 {1} 分鐘',f:[N(7),N(1)],
+ hints:['四個數字全部相同的時間有哪些？00:00、11:11、22:22……33:33 可以嗎？','15:21 之後，第一個這樣的時間是甚麼？','由 15:21 數到 22:22：先數到 16:00。'],
+ sol:{fig:()=>jumpSVG(T(15,21),[{d:39,l:'39 分'},{d:360,l:'6 小時'},{d:22,l:'22 分'}]),steps:['四個數字相同的時間只有 00:00、11:11、22:22（33:33 不存在）。','15:21 之後第一個是 22:22。','15:21 → 16:00：39 分鐘；16:00 → 22:00：6 小時；22:00 → 22:22：22 分鐘。','6 小時 + 39 分鐘 + 22 分鐘 = 6 小時 61 分鐘 = 7 小時 1 分鐘。'],ans:'7 小時 1 分鐘'}},
+{id:'D6',s:'D',n:'兩條巴士線',
+ q:'巴士 A 線<b>每 12 分鐘</b>開出一班，B 線<b>每 18 分鐘</b>開出一班。兩線的頭班車都在 <b>06:30</b> 同時開出。',
+ tpl:'兩線下一次同時開出是 {0} : {1}；<br>由 06:30 至 09:30（包括兩者），兩線共同時開出 {2} 次。',f:[N(7,1),N(6,1),N(6)],
+ hints:['列出 A 線：06:30、06:42、06:54、07:06……','列出 B 線：06:30、06:48、07:06……','兩線每隔多少分鐘便同時開出一次？由 06:30 開始一直數到 09:30。'],
+ sol:{fig:()=>tbl(['A 線（每 12 分）','B 線（每 18 分）'],[['06:30','06:30'],['06:42','06:48'],['06:54','07:06'],['07:06','—']])+`<p class="note" style="width:100%;text-align:center">07:06 兩線都有開出，相隔 36 分鐘</p>`,steps:['兩線下一次同時開出是 07:06，即每隔 36 分鐘同時開出一次。','06:30 → 07:06 → 07:42 → 08:18 → 08:54 → 09:30。','共 6 次（包括 06:30 和 09:30）。'],ans:'07:06；6 次'}},
+{id:'D7',s:'D',n:'連播三集',
+ q:'電視台連續播放 3 集劇集，每集 50 分鐘，集與集之間有 8 分鐘廣告。最後一集在 <b>23:14</b> 播完。第一集在甚麼時間開始？（用 12 小時報時制）',
+ tpl:'{0}午 {1} 時 {2} 分',f:[C(['上','下'],'下'),N(8),N(28)],
+ hints:['3 集之間有<b>2 段</b>廣告（不是 3 段）。','總時間 = 50 × 3 + 8 × 2 = ？分鐘，再化成小時和分鐘。','由 23:14 往回數總時間，最後轉做 12 小時報時制。'],
+ sol:{fig:()=>jumpSVG(T(23,14),[{d:50,l:'第三集'},{d:8,l:'廣告'},{d:50,l:'第二集'},{d:8,l:'廣告'},{d:50,l:'第一集'}],true),steps:['劇集：50 × 3 = 150 分鐘；廣告：8 × 2 = 16 分鐘。','共 166 分鐘 = 2 小時 46 分鐘。','23:14 往回 2 小時 → 21:14；再往回 14 分鐘 → 21:00；再往回 32 分鐘 → 20:28。','20 − 12 = 8 → 下午 8 時 28 分。'],ans:'下午 8 時 28 分'}},
+{id:'D8',s:'D',n:'飛往倫敦（時差）',
+ q:'倫敦的時間比香港<b>慢 8 小時</b>（香港 16:00 時，倫敦是 08:00）。一班飛機在香港時間 <b>23:30</b> 起飛，飛行 13 小時到達倫敦。到達時，倫敦當地時間是甚麼？',
+ tpl:'倫敦時間 {0} : {1}',f:[N(4,1),N(30,1)],
+ hints:['先用香港時間計算：23:30 + 13 小時。','23:30 → 00:00 是 30 分鐘……或者：23:30 + 13 小時 = 第二天 12:30（香港時間）。','把香港時間轉為倫敦時間：往回 8 小時。'],
+ sol:{fig:()=>jumpSVG(T(23,30),[{d:30,l:'30 分'},{d:750,l:'12 小時 30 分'}],false,['23:30','00:00','12:30'])+jumpSVG(T(12,30),[{d:480,l:'− 8 小時（時差）'}],true),steps:['香港時間：23:30 + 13 小時 = 第二天 12:30。','倫敦比香港慢 8 小時：12:30 往回 8 小時 = 04:30。','到達時是倫敦的清晨 04:30。'],ans:'04:30（倫敦時間）'}}
+];
+
+/* ===================== state ===================== */
+const KEY='p3-24h-tool-v2';
+let S={cur:'L1',mode:'student',prog:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s)S=Object.assign(S,s)}catch(e){}
+const mem={}; // per question: {vals:[], hint:0, tries:0, sol:false, fb:null}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function M(id){return mem[id]||(mem[id]={vals:[],hint:0,tries:0,sol:false,fb:null,marks:[]})}
+
+/* ===================== sidebar ===================== */
+const $=s=>document.querySelector(s);
+function renderSide(){
+  const qs=Q.filter(q=>!q.learn),done=qs.filter(q=>S.prog[q.id]==='ok').length;
+  let h=`<div class="brand">${digi('24:00')}<h1>24 小時報時制<small>小三・時間</small></h1></div>
+  <div class="mode" role="group" aria-label="使用模式">
+   <button type="button" data-mode="student" aria-pressed="${S.mode==='student'}">學生模式</button>
+   <button type="button" data-mode="teacher" aria-pressed="${S.mode==='teacher'}">老師模式</button></div>
+  <div class="prog">已答對 ${done} / ${qs.length} 題<div class="bar"><i style="width:${done/qs.length*100}%"></i></div></div>`;
+  for(const k in SECS){const sec=SECS[k];
+    h+=`<div class="grp" style="--c:var(${sec.c})"><h2>${sec.name}<span>${sec.note}</span></h2>`;
+    Q.filter(q=>q.s===k).forEach(q=>{
+      const st=S.prog[q.id]||'';
+      h+=`<button type="button" class="item" data-id="${q.id}" aria-current="${q.id===S.cur}"><span class="no">${q.id}</span><span class="tt">${q.n}</span>${q.learn?'':`<span class="st ${st}" aria-label="${st==='ok'?'已答對':st==='tried'?'已嘗試':'未做'}"></span>`}</button>`});
+    h+=`</div>`}
+  h+=`<button type="button" class="reset" id="resetBtn">重設所有進度</button>`;
+  $('#side').innerHTML=h;
+  typeset($('#side'));
+}
+$('#side').addEventListener('click',e=>{
+  const it=e.target.closest('.item');if(it){go(it.dataset.id);closeMenu();return}
+  const md=e.target.closest('[data-mode]');if(md){S.mode=md.dataset.mode;save();render();return}
+  if(e.target.id==='resetBtn'&&confirm('確定重設所有進度？')){S.prog={};for(const k in mem)delete mem[k];save();render()}
+});
+function openMenu(){$('#side').classList.add('open');$('#scrim').classList.add('open')}
+function closeMenu(){$('#side').classList.remove('open');$('#scrim').classList.remove('open')}
+$('#menuBtn').onclick=openMenu;$('#scrim').onclick=closeMenu;
+
+function go(id){S.cur=id;save();render();$('#mainScroll').scrollTop=0;window.scrollTo(0,0)}
+
+/* ===================== learn pages ===================== */
+let exMin=T(15,15);
+function twelve(x){const h=Math.floor(x/60),m=x%60;
+  if(h===0&&m===0)return['','午夜 12 時'];if(h===12&&m===0)return['','正午 12 時'];
+  const ap=h<12?'上午':'下午';let hh=h%12;if(hh===0)hh=12;return[ap,`${hh} 時${m?` ${m} 分`:''}`]}
+function ruleText(x){const h=Math.floor(x/60);
+  if(h===0)return '午夜 12 時是新一天的開始，記作 <b>00</b> 時。';
+  if(h<12)return `上午：時數不變，${h<10?`補 0 寫成 <b>${p2(h)}</b>`:`寫成 <b>${h}</b>`}。`;
+  if(h===12)return '正午 12 時至 12 時 59 分：時數仍是 <b>12</b>，不用加 12。';
+  return `下午：${h-12} + 12 = <b>${h}</b>`}
+function learnExplorer(){
+  return `<div class="crumb"><span class="tag" style="--c:var(--secL)">學習區</span>L1</div>
+  <div class="card"><h2>一天有 24 小時</h2>
+  <p class="prompt">拉動下面的時間軸，看看同一個時間，用兩種報時制怎樣寫。</p>
+  <div class="explorer"><div id="exClock"></div>
+   <div><div class="ex-row"><span class="ex-lab">12 小時報時制</span><span class="ex-12" id="ex12"></span></div>
+   <div class="ex-row"><span class="ex-lab">24 小時報時制</span><span id="ex24"></span></div>
+   <div class="ex-rule" id="exRule"></div></div></div>
+  <div class="fig" id="exBar"></div>
+  <input type="range" id="exRange" min="0" max="1435" step="5" value="${exMin}" aria-label="選擇時間">
+  <div class="nudge">
+   <button class="btn" data-d="-60">− 1 小時</button><button class="btn" data-d="-5">− 5 分</button>
+   <button class="btn" data-d="5">+ 5 分</button><button class="btn" data-d="60">+ 1 小時</button></div>
+  <h3 class="sub">記住</h3>
+  <ul><li>24 小時報時制<b>無須</b>標示「上午」、「下午」、a.m. 或 p.m.。</li>
+  <li>時和分<b>各用兩個數位</b>，例如 7:05 a.m. 寫成 07:05。</li>
+  <li>正午 12 時記作 12:00；午夜 12 時記作 00:00。</li></ul>
+  </div>${pager()}`;
+}
+function updExplorer(){
+  const [ap,rest]=twelve(exMin);const h=Math.floor(exMin/60),m=exMin%60;
+  $('#exClock').innerHTML=clockSVG(h,m,200);
+  $('#ex12').innerHTML=`${ap?`<span class="ap ${ap==='下午'?'pm':''}">${ap}</span> `:''}${rest}`;
+  $('#ex24').innerHTML=digi(f24(exMin),'big');
+  $('#exRule').innerHTML=ruleText(exMin);
+  $('#exBar').innerHTML=dayBar([{m:exMin}]);
+  $('#exRange').value=exMin;
+}
+function learnRules(){
+  return `<div class="crumb"><span class="tag" style="--c:var(--secL)">學習區</span>L2</div>
+  <div class="card"><h2>轉換方法與時間計算</h2>
+  <h3 class="sub">12 小時 → 24 小時</h3>
+  <div class="rules">
+   <div class="rule">${digi('07:05')}<div>上午 7 時 5 分：時數不變，<b>補 0</b> 成兩個數位。</div></div>
+   <div class="rule">${digi('12:30')}<div>下午 12 時 30 分：正午的 12 時<b>不用加 12</b>。</div></div>
+   <div class="rule">${digi('19:07')}<div>下午 7 時 7 分：下午 1 時至 11 時，時數 <b>+ 12</b>（7 + 12 = 19）。</div></div>
+   <div class="rule">${digi('00:00')}<div>午夜 12 時：一天的開始，記作 00:00，讀作「0 時 0 分」。</div></div>
+  </div>
+  <h3 class="sub">24 小時 → 12 小時</h3>
+  <p>時數大於 12 的，<b>減 12</b> 再加上「下午」：21:40 → 21 − 12 = 9 → 下午 9 時 40 分。</p>
+  <h3 class="sub">計算經過的時間：跳整點</h3>
+  <p>由 09:40 到 12:15 經過了多久？先跳到下一個整點，再跳整小時，最後跳剩下的分鐘。</p>
+  <div class="fig">${jumpSVG(T(9,40),[{d:20,l:'20 分'},{d:120,l:'2 小時'},{d:15,l:'15 分'}])}</div>
+  <p>20 分鐘 + 2 小時 + 15 分鐘 = <b>2 小時 35 分鐘</b>。</p>
+  <h3 class="sub">已知結束時間，找開始時間：往回跳</h3>
+  <div class="fig">${jumpSVG(T(14,25),[{d:60,l:'− 1 小時'},{d:25,l:'− 25 分'},{d:10,l:'− 10 分'}],true)}</div>
+  <p>14:25 往回 1 小時 35 分鐘：先回 1 小時到 13:25，再回 25 分鐘到 13:00，最後回 10 分鐘到 <b>12:50</b>。</p>
+  <h3 class="sub">跨越午夜</h3>
+  <p>過了 23:59 便回到 00:00。計算時先數到 00:00，再由 00:00 繼續數。</p>
+  <div class="fig">${jumpSVG(T(23,20),[{d:40,l:'40 分'},{d:90,l:'1 小時 30 分'}],false,['23:20','00:00','01:30'])}</div>
+  <p>23:20 再過 2 小時 10 分鐘：先數 40 分鐘到 00:00，再數 1 小時 30 分鐘到 <b>01:30</b>（第二天）。</p>
+  </div>${pager()}`;
+}
+
+function learnTypes(){
+  return `<div class="crumb"><span class="tag" style="--c:var(--secL)">學習區</span>L3</div>
+  <div class="card"><h2>三種時間題：知二求一</h2>
+  <p class="prompt">開始時間、經過時間、結束時間，知道其中兩個，就可以求第三個。</p>
+  <div class="how">
+   <div><h4>① 求經過時間</h4>${tri('09:40','?','12:15')}<p>由開始時間<b>向前數</b>：先數到下一個整點，再數整小時，最後數剩下的分鐘。</p><div class="fig">${jumpSVG(T(9,40),[{d:20,l:'20 分'},{d:120,l:'2 小時'},{d:15,l:'15 分'}])}</div><p>20 分 + 2 小時 + 15 分 = <b>2 小時 35 分鐘</b></p></div>
+   <div><h4>② 求結束時間</h4>${tri('14:35','1 小時 40 分鐘','?')}<p>開始時間<b>加上</b>經過時間：先加小時，再加分鐘；分鐘超過 60 時，先湊成整點。</p><div class="fig">${jumpSVG(T(14,35),[{d:60,l:'+ 1 小時'},{d:25,l:'+ 25 分'},{d:15,l:'+ 15 分'}])}</div><p>14:35 → 15:35 → 16:00 → <b>16:15</b></p></div>
+   <div><h4>③ 求開始時間</h4>${tri('?','2 小時 50 分鐘','11:20')}<p>由結束時間<b>往回數</b>：先減小時，再減分鐘；不夠減時，先退到整點。</p><div class="fig">${jumpSVG(T(11,20),[{d:120,l:'− 2 小時'},{d:20,l:'− 20 分'},{d:30,l:'− 30 分'}],true)}</div><p>11:20 → 09:20 → 09:00 → <b>08:30</b></p></div>
+  </div>
+  <p class="note">小貼士：做完可以驗算。例如 08:30 + 2 小時 50 分鐘 = 11:20 ✓</p>
+  </div>${pager()}`;
+}
+/* ===================== question page ===================== */
+function fieldHTML(f,i,m){
+  const mk=m.marks[i]||'';
+  if(f.t==='n')return `<input class="box ${mk}" data-i="${i}" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="方格 ${i+1}" value="${m.vals[i]??''}">`;
+  return `<span class="seg ${mk}" data-i="${i}" role="group" aria-label="選擇 ${i+1}">${f.o.map(o=>`<button type="button" class="opt" data-v="${o}" aria-pressed="${m.vals[i]===o}">${o}</button>`).join('')}</span>`;
+}
+function pager(){
+  const i=Q.findIndex(q=>q.id===S.cur),pv=Q[i-1],nx=Q[i+1];
+  return `<nav class="pager">${pv?`<button class="btn" data-go="${pv.id}">← ${pv.id}</button>`:'<span></span>'}${nx?`<button class="btn" data-go="${nx.id}">${nx.id} →</button>`:'<span></span>'}</nav>`;
+}
+function qPage(q){
+  const m=M(q.id),sec=SECS[q.s],idx=Q.filter(x=>x.s===q.s).indexOf(q)+1;
+  const canSol=S.mode==='teacher'||m.tries>0||S.prog[q.id]==='ok';
+  let h=`<div class="crumb"><span class="tag" style="--c:var(${sec.c})">${sec.name}</span>第 ${idx} 題（${q.id}）</div><div class="card">`;
+  h+=`<p class="prompt">${q.q}</p>`;
+  if(q.fig)h+=`<div class="fig">${q.fig()}</div>`;
+  h+=`<div class="ans" id="ans">${q.tpl.replace(/(?<![}a-z])\{(\d+)\}/g,(_,i)=>fieldHTML(q.f[+i],+i,m))}</div>`;
+  h+=`<div class="actions">
+    <button type="button" class="btn primary" id="chk">檢查答案</button>
+    <button type="button" class="btn" id="hnt" ${m.hint>=q.hints.length?'disabled':''}>提示（${m.hint}/${q.hints.length}）</button>
+    <button type="button" class="btn" id="sl" ${canSol?'':'disabled'}>${m.sol?'收起題解':'題解及圖解'}</button>
+    <button type="button" class="btn" id="clr">重做</button>
+    ${canSol?'':'<span class="lock">先試答一次，題解便會開放。</span>'}</div>`;
+  h+=`<div class="fb ${m.fb?m.fb[0]:''}" id="fb" role="status" aria-live="polite">${m.fb?m.fb[1]:''}</div>`;
+  h+=`<div class="hints">${q.hints.slice(0,m.hint).map((t,i)=>`<div class="hint"><b class="k">提示 ${i+1}</b>${t}</div>`).join('')}</div>`;
+  if(m.sol){h+=`<div class="sol"><h3>題解</h3>${q.sol.fig?`<div class="fig">${q.sol.fig()}</div>`:''}<ol>${q.sol.steps.map(s=>`<li>${s}</li>`).join('')}</ol><span class="final">答案：${q.sol.ans}</span></div>`}
+  h+=`</div>${pager()}`;
+  return h;
+}
+function readVals(q){
+  const m=M(q.id);
+  document.querySelectorAll('#ans input.box').forEach(el=>{m.vals[+el.dataset.i]=el.value.trim()});
+}
+function check(q){
+  readVals(q);const m=M(q.id);
+  let empty=0,bad=0,pad=0;
+  m.marks=q.f.map((f,i)=>{const v=m.vals[i];
+    if(v===undefined||v==='')return(empty++,'');
+    if(f.t==='c')return v===f.a?'ok':(bad++,'bad');
+    if(!/^\d+$/.test(v)||+v!==f.a)return(bad++,'bad');
+    if(f.pad&&v.length<2)return(pad++,'pad');
+    return 'ok'});
+  if(empty){m.fb=['warn',`還有 ${empty} 個空格未填。`]}
+  else if(bad){m.tries++;m.fb=['bad',`有 ${bad} 格不正確（紅色）。${m.hint<q.hints.length?'按「提示」一步一步想。':'看看提示，或打開題解。'}`];if(S.prog[q.id]!=='ok')S.prog[q.id]='tried'}
+  else if(pad){m.tries++;m.fb=['warn','數值對了！不過 24 小時報時制的時和分要<b>各用兩個數位</b>，例如 7 要寫成 07。'];if(S.prog[q.id]!=='ok')S.prog[q.id]='tried'}
+  else{m.tries++;m.fb=['ok','答對了！做得好。'];S.prog[q.id]='ok'}
+  save();render();
+  if(m.fb[0]==='ok'){const i=Q.findIndex(x=>x.id===q.id),nx=Q[i+1];if(nx){const fb=$('#fb');fb.innerHTML+=` <button type="button" class="btn go" data-go="${nx.id}" style="margin-left:10px">下一題</button>`}}
+}
+
+/* ===================== render ===================== */
+function render(){
+  const q=Q.find(x=>x.id===S.cur)||Q[0];S.cur=q.id;
+  renderSide();
+  $('#topTitle').textContent=`${q.id}　${q.n.replace(/\$[^$]*\$/g,'').trim()}`;
+  const main=$('#main');
+  if(q.learn==='explorer'){main.innerHTML=learnExplorer();updExplorer();
+    $('#exRange').oninput=e=>{exMin=+e.target.value;updExplorer()};
+    main.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{exMin=wrap(exMin+ +b.dataset.d);if(exMin>1435)exMin=1435;updExplorer()});
+  } else if(q.learn==='rules'){main.innerHTML=learnRules()}
+  else if(q.learn==='types'){main.innerHTML=learnTypes()}
+  else{main.innerHTML=qPage(q);bindQ(q)}
+  typeset(main);
+}
+function bindQ(q){
+  const m=M(q.id),inputs=[...document.querySelectorAll('#ans input.box')];
+  inputs.forEach((el,k)=>{
+    el.addEventListener('input',()=>{el.value=el.value.replace(/\D/g,'');m.vals[+el.dataset.i]=el.value;el.classList.remove('ok','bad','pad');m.marks[+el.dataset.i]='';
+      if(el.value.length===2&&inputs[k+1])inputs[k+1].focus()});
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();check(q)}});
+  });
+  document.querySelectorAll('#ans .seg').forEach(sg=>sg.addEventListener('click',e=>{
+    const b=e.target.closest('.opt');if(!b)return;readVals(q);m.vals[+sg.dataset.i]=b.dataset.v;m.marks[+sg.dataset.i]='';
+    sg.classList.remove('ok','bad');sg.querySelectorAll('.opt').forEach(o=>o.setAttribute('aria-pressed',o===b))}));
+  $('#chk').onclick=()=>check(q);
+  $('#hnt').onclick=()=>{readVals(q);if(m.hint<q.hints.length)m.hint++;render()};
+  $('#sl').onclick=()=>{readVals(q);m.sol=!m.sol;render();if(m.sol){const el=document.querySelector('.sol');el&&el.scrollIntoView({behavior:'smooth',block:'start'})}};
+  $('#clr').onclick=()=>{mem[q.id]={vals:[],hint:0,tries:m.tries,sol:false,fb:null,marks:[]};render()};
+}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
+
+/* ===================== math rendering ===================== */
+function fracFallback(el){
+  const walk=n=>{
+    if(n.nodeType===3&&n.nodeValue.includes('$')){
+      const html=n.nodeValue.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\$(\d*)\\frac\{(\d+)\}\{(\d+)\}\$/g,(_,w,a,b)=>`${w}<span class="frac"><span>${a}</span><span class="de">${b}</span></span>`);
+      const sp=document.createElement('span');sp.innerHTML=html;n.replaceWith(sp);
+    } else if(n.nodeType===1&&n.tagName!=='SCRIPT'&&n.tagName!=='svg')[...n.childNodes].forEach(walk);
+  };walk(el);
+}
+let mjq=Promise.resolve();
+function typeset(el){
+  if(window.mjReady&&window.MathJax&&MathJax.typesetPromise){mjq=mjq.then(()=>MathJax.typesetPromise([el])).catch(()=>fracFallback(el))}
+  else fracFallback(el);
+}
+window.render=render;
+render();
+</script>
+</body>
+</html>
